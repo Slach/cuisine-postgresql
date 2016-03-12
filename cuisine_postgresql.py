@@ -1,16 +1,18 @@
 try:
-    from fabric.context_managers import cd, hide, settings
-    from fabric.operations import sudo
+    from fabric.context_managers import cd, lcd, hide, settings
+    from fabric.operations import sudo, local
     from fabric.utils import puts
     __fabric_available = True
 except ImportError:
     __fabric_available = False
 
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 __maintainer__ = u'Atamert \xd6l\xe7gen'
 __email__ = 'muhuk@muhuk.com'
 __all__ = [
+    'mode_local',
+    'mode_sudo',
     'postgresql_database_check',
     'postgresql_database_create',
     'postgresql_database_ensure',
@@ -19,6 +21,13 @@ __all__ = [
     'postgresql_role_ensure',
 ]
 
+__run_mode__ = 'sudo'
+
+def mode_local():
+    __run_mode__ = 'local'    
+
+def mode_sudo():
+    __run_mode__ = 'sudo'    
 
 def require_fabric(f):
     """
@@ -222,5 +231,9 @@ def run_as_postgres(cmd):
     #
     #     could not change directory to "/root"
     #
-    with cd('/'):
-        return sudo(cmd, user='postgres')
+    if __run_mode__=='sudo':
+        with cd('/'):
+            return sudo(cmd, user='postgres')
+    if __run_mode__=='local':
+        with lcd('/'):
+            return local('sudo -u {user} {cmd}'.format({'cmd':cmd, 'user':'postgres'}))
