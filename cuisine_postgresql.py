@@ -237,4 +237,4 @@ def run_as_postgres(cmd):
             return sudo(cmd, user='postgres')
     if env.CUISINE_PGSQL_MODE == 'local':
         with lcd('/'):
-            return local('sudo -u {user} {cmd}'.format(cmd=cmd, user=postgres))
+            return local('sudo -u {user} {cmd}'.format(cmd=cmd, user='postgres'))
