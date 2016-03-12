@@ -3,6 +3,8 @@ try:
     from fabric.operations import sudo, local
     from fabric.utils import puts
     from fabric.api import env
+
+    env.CUISINE_PGSQL_MODE = 'remote'
     __fabric_available = True
 except ImportError:
     __fabric_available = False
@@ -22,7 +24,6 @@ __all__ = [
     'postgresql_role_ensure',
 ]
 
-env.CUISINE_PGSQL_MODE = 'remote'
 
 class __mode_switcher(object):
     MODE_VALUE = None
