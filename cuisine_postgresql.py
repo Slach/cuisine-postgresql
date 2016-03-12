@@ -8,9 +8,9 @@ except ImportError:
     __fabric_available = False
 
 
-__version__ = '0.2.2'
-__maintainer__ = u'Atamert \xd6l\xe7gen'
-__email__ = 'muhuk@muhuk.com'
+__version__ = '0.2.1'
+__maintainer__ = u'Atamert \xd6l\xe7gen, Eugene Klimov'
+__email__ = 'muhuk@muhuk.com, bloodjazman@gmail.com'
 __all__ = [
     'mode_local',
     'mode_sudo',
@@ -22,13 +22,37 @@ __all__ = [
     'postgresql_role_ensure',
 ]
 
-env.CUISINE_PGSQL_MODE = 'sudo'
+env.CUISINE_PGSQL_MODE = 'remote'
 
-def mode_local():
-    env.CUISINE_PGSQL_MODE = 'local'    
+class __mode_switcher(object):
+    MODE_VALUE = None
+    MODE_KEY = 'CUISINE_PGSQL_MODE'
 
-def mode_sudo():
-    env.CUISINE_PGSQL_MODE = 'sudo'    
+    def __init__(self):
+        self.oldMode = env.get(self.MODE_KEY)
+        env[self.MODE_KEY] = self.MODE_VALUE
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, type, value, traceback):
+        if self.oldMode is None:
+            del env[self.MODE_KEY]
+        else:
+            env[self.MODE_KEY] = self.oldMode
+
+
+class mode_local(__mode_switcher):
+    """Sets Cuisine into local mode, where run/sudo won't go through
+    Fabric's API, but directly through a popen. This allows you to
+    easily test your Cuisine scripts without using Fabric."""
+    MODE_VALUE = 'local'
+
+
+class mode_remote(__mode_switcher):
+    """Comes back to Fabric's API for run/sudo. This basically reverts
+    the effect of calling `mode_local()`."""
+    MODE_VALUE = 'remote'
 
 def require_fabric(f):
     """
@@ -232,7 +256,7 @@ def run_as_postgres(cmd):
     #
     #     could not change directory to "/root"
     #
-    if env.CUISINE_PGSQL_MODE == 'sudo':
+    if env.CUISINE_PGSQL_MODE == 'remote':
         with cd('/'):
             return sudo(cmd, user='postgres')
     if env.CUISINE_PGSQL_MODE == 'local':
