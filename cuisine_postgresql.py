@@ -2,6 +2,7 @@ try:
     from fabric.context_managers import cd, lcd, hide, settings
     from fabric.operations import sudo, local
     from fabric.utils import puts
+    from fabric.api import env
     __fabric_available = True
 except ImportError:
     __fabric_available = False
@@ -21,13 +22,13 @@ __all__ = [
     'postgresql_role_ensure',
 ]
 
-__run_mode__ = 'sudo'
+env.CUISINE_PGSQL_MODE = 'sudo'
 
 def mode_local():
-    __run_mode__ = 'local'    
+    env.CUISINE_PGSQL_MODE = 'local'    
 
 def mode_sudo():
-    __run_mode__ = 'sudo'    
+    env.CUISINE_PGSQL_MODE = 'sudo'    
 
 def require_fabric(f):
     """
@@ -231,9 +232,9 @@ def run_as_postgres(cmd):
     #
     #     could not change directory to "/root"
     #
-    if __run_mode__=='sudo':
+    if env.CUISINE_PGSQL_MODE == 'sudo':
         with cd('/'):
             return sudo(cmd, user='postgres')
-    if __run_mode__=='local':
+    if env.CUISINE_PGSQL_MODE == 'local':
         with lcd('/'):
             return local('sudo -u {user} {cmd}'.format({'cmd':cmd, 'user':'postgres'}))
